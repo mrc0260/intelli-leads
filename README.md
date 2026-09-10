@@ -1,6 +1,7 @@
-# AI LinkedIn Engagement Agent
+# intelli-leads is an AI LinkedIn Engagement Agent
+https://www.intelli-leads.com
 
-An experimental TypeScript and Python application for researching LinkedIn topics, collecting publicly visible post engagement, and analyzing it with an LLM.
+A TypeScript and Python application for researching LinkedIn topics, collecting publicly visible post engagement, and analyzing it with an LLM.
 
 ## Features
 
