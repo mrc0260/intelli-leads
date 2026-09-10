@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Environment variables (never commit real credentials)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+service-account*.json
+
+# Build/temp files
+task.txt
+
+# Browser-Use Agent generated files
+todo.md
+extracted_data.md
+
+# Logs
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Browser profile and cookies
+chrome_profile/
+cookies.json*
+
+# Generated research records
+output/
