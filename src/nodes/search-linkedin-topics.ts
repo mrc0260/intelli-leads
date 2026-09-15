@@ -54,11 +54,14 @@ function runLinkedInSearchScript(minComments: number, skippedUrls: string[], onP
     let collectedOutput = "";
     let collectedStderr = "";
     let settled = false;
+    let outputResolved = false;
+    let forceTerminationTimer: ReturnType<typeof setTimeout> | undefined;
     const debugLogStream = fs.createWriteStream("python_browser_debug.log", { flags: "a" });
 
     const finish = (): boolean => {
       if (settled) return false;
       settled = true;
+      if (forceTerminationTimer) clearTimeout(forceTerminationTimer);
       cleanUpTopicsTempFile();
       debugLogStream.end();
       return true;
@@ -82,7 +85,36 @@ function runLinkedInSearchScript(minComments: number, skippedUrls: string[], onP
       }
     );
 
-    childProcess.stdout.on("data", (chunk: Buffer) => collectedOutput += chunk.toString("utf-8"));
+    const resolveWhenExtractionArrives = (): void => {
+      if (outputResolved) return;
+      const output = collectedOutput.trim();
+      try {
+        const parsedOutput = JSON.parse(output) as { posts?: unknown };
+        if (!Array.isArray(parsedOutput.posts)) return;
+      } catch {
+        return;
+      }
+
+      outputResolved = true;
+      console.error("[searchLinkedInTopics] Received validated extraction JSON; continuing without waiting for worker shutdown");
+      resolveWithOutput(output);
+
+      // Browser-use can leave background resources alive after returning the
+      // result. Give its cleanup a short grace period, then prevent a leaked
+      // Python process from holding the pipeline open indefinitely.
+      forceTerminationTimer = setTimeout(() => {
+        if (!settled) {
+          console.error("[searchLinkedInTopics] Python worker did not exit after returning JSON; terminating it");
+          childProcess.kill();
+        }
+      }, 5000);
+      forceTerminationTimer.unref();
+    };
+
+    childProcess.stdout.on("data", (chunk: Buffer) => {
+      collectedOutput += chunk.toString("utf-8");
+      resolveWhenExtractionArrives();
+    });
     
     let stderrBuffer = "";
     childProcess.stderr.on("data", (chunk: Buffer) => {
@@ -126,6 +158,15 @@ function runLinkedInSearchScript(minComments: number, skippedUrls: string[], onP
     childProcess.on("close", (exitCode, signal) => {
       if (!finish()) return;
 
+      if (outputResolved) {
+        if (exitCode !== 0 || signal) {
+          console.error(
+            `[searchLinkedInTopics] Python worker exited after returning JSON (exit code ${exitCode ?? "unknown"}, signal ${signal ?? "none"})`,
+          );
+        }
+        return;
+      }
+
       if (exitCode !== 0 || signal) {
         const outputDetails = collectedStderr.trim();
         const details = outputDetails ? `\nLast Python output:\n${outputDetails}` : "";
@@ -146,6 +187,10 @@ function runLinkedInSearchScript(minComments: number, skippedUrls: string[], onP
     });
     childProcess.on("error", (processError) => {
       if (!finish()) return;
+      if (outputResolved) {
+        console.error(`[searchLinkedInTopics] Python worker cleanup error after returning JSON: ${processError.message}`);
+        return;
+      }
       const errorMessage = `[searchLinkedInTopics] Could not start Python browser worker (${PYTHON_EXECUTABLE}): ${processError.message}`;
       console.error(errorMessage);
       rejectWithError(new Error(errorMessage, { cause: processError }));

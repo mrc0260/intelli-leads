@@ -25,6 +25,8 @@ class _HidePromptLogs(logging.Filter):
         "🎯 Task:",
         "LLM prompt:",
         "Messages sent to LLM:",
+        "return_extracted_json:",
+        "Final Result:",
     )
 
     def filter(self, record: logging.LogRecord) -> bool:

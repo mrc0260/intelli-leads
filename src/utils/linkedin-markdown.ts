@@ -140,13 +140,12 @@ export function writeLinkedInSearchMarkdown(
 
     interactions.forEach((interaction, interactionIndex) => {
       lines.push(
-        `${interactionIndex + 1}. ${renderUrl(valueOrEmpty(interaction.username) || "Open commenter", interaction.user_url, linkedinProfileUrl)}`,
-        `   - Comment URL: ${renderUrl("Open comment", interaction.comment_url, linkedinCommentUrl)}`,
-        `   - Reply target: ${renderUrl("Open reply target", interaction.comment_reply_to_user_url, linkedinProfileUrl)}`,
-        `   - Time: ${escapeMarkdown(interaction.time) || "Not provided"}`,
-        `   - Type: ${escapeMarkdown(interaction.interaction_type) || "comment"}`,
-        "   - Text:",
+        `${interactionIndex + 1}. authorName: ${renderUrl(valueOrEmpty(interaction.username) || "Open commenter", interaction.user_url, linkedinProfileUrl)}`,
+        `   - commentUrl: ${renderUrl("Open comment", interaction.comment_url, linkedinCommentUrl)}`,
+        "   - commentText:",
         quoteText(interaction.value).split("\n").map((line) => `   ${line}`).join("\n"),
+        `   - time: ${escapeMarkdown(interaction.time) || "Not provided"}`,
+        `   - replyTarget: ${renderUrl("Open reply target", interaction.comment_reply_to_user_url, linkedinProfileUrl)}`,
         "",
       );
     });
