@@ -17,7 +17,7 @@ const EXAMPLE_REQUEST =
 function printWelcomeBanner(): void {
   const horizontalRule = "─".repeat(78);
   console.log(`\n┌${horizontalRule}┐`);
-  console.log(`│  🔍  LinkedIn Research Agent                                                 │`);
+  console.log(`│  🔍  intelli-leads - LinkedIn Research Agent.  (www.intelli-leads.com)       │`);
   console.log(`├${horizontalRule}┤`);
   console.log(`│  Describe the customers you want to find and what topics to research.        │`);
   console.log(`│                                                                              │`);
