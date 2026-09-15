@@ -16,12 +16,18 @@ from browser_use import Agent
 from browser_use.browser.session import BrowserSession
 
 
+def _log(message: str) -> None:
+    """Write a flushed worker status line so the parent process can show it immediately."""
+    print(f"[run_linkedin_search] {message}", file=sys.stderr, flush=True)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # LLM + BROWSER SETUP
 # ─────────────────────────────────────────────────────────────────────────────
 
 def create_intelliModel_llm() -> ChatOpenAI:
     """Creates the IntelliModel 2.5 model configured for the IntelliDesign API endpoint."""
+    _log(f"Configuring IntelliModel 2.5 (LLM_API_KEY {'set' if os.environ.get('LLM_API_KEY') else 'missing'})")
     return ChatOpenAI(
         model="intelliModel-v2.5",
         api_key=os.environ.get("LLM_API_KEY", ""),
@@ -35,14 +41,43 @@ def create_intelliModel_llm() -> ChatOpenAI:
 
 def launch_chrome_with_remote_debugging() -> None:
     """Launch Chrome with remote debugging enabled so browser-use can connect via CDP.
-    If Chrome is already running on port 9222 this is a no-op (Popen will fail silently)."""
+    Reuse an existing CDP endpoint and fail clearly if Chrome never becomes reachable."""
     import subprocess
     import time
+    import urllib.request
     from browser_use.browser.chrome import find_chrome_executable
 
+    cdp_url = "http://127.0.0.1:9222/json/version"
+
+    def cdp_is_available() -> bool:
+        try:
+            with urllib.request.urlopen(cdp_url, timeout=1) as response:
+                return response.status == 200
+        except Exception:
+            return False
+
+    def wait_for_cdp(timeout_seconds: int = 15) -> None:
+        deadline = time.monotonic() + timeout_seconds
+        _log(f"Waiting for Chrome remote debugging at {cdp_url}")
+        while time.monotonic() < deadline:
+            if cdp_is_available():
+                _log("Chrome remote debugging is ready")
+                return
+            time.sleep(0.5)
+        raise RuntimeError(
+            f"Chrome did not expose remote debugging at {cdp_url} within {timeout_seconds} seconds"
+        )
+
+    if cdp_is_available():
+        _log("Chrome remote debugging is already available; reusing the existing Chrome process")
+        return
+
+    _log("Locating Chrome executable")
     chrome_executable_path = find_chrome_executable()
+    _log(f"Chrome executable: {chrome_executable_path}")
     chrome_profile_dir     = os.path.abspath("./chrome_profile")
     os.makedirs(chrome_profile_dir, exist_ok=True)
+    _log(f"Chrome profile directory: {chrome_profile_dir}")
 
     chrome_launch_args = [
         chrome_executable_path,
@@ -53,17 +88,22 @@ def launch_chrome_with_remote_debugging() -> None:
     ]
 
     try:
+        _log("Launching Chrome with remote debugging enabled on port 9222")
         subprocess.Popen(chrome_launch_args)
-        time.sleep(3)  # Give Chrome time to open the remote-debugging port
-        print("[run_linkedin_search] Chrome launched on port 9222", file=sys.stderr)
     except Exception as chrome_launch_error:
-        # Chrome may already be running — that is fine, just continue
-        print(f"[run_linkedin_search] Chrome already running or launch skipped: {chrome_launch_error}", file=sys.stderr)
+        # A separate Chrome process may already own the profile or port. Verify CDP
+        # below instead of hiding the launch error.
+        _log(f"Chrome launch command failed: {chrome_launch_error}")
+
+    wait_for_cdp()
 
 
 def connect_to_running_chrome() -> BrowserSession:
     """Connect to the Chrome instance via CDP at port 9222."""
-    return BrowserSession(cdp_url="http://localhost:9222")
+    _log("Creating browser-use session over Chrome DevTools Protocol")
+    browser_session = BrowserSession(cdp_url="http://127.0.0.1:9222")
+    _log("browser-use CDP session created")
+    return browser_session
 
 
 async def ensure_linkedin_login() -> None:
@@ -76,64 +116,60 @@ async def ensure_linkedin_login() -> None:
     from playwright.async_api import async_playwright
     import time
 
-    print("\n🔐 Checking LinkedIn login status...", file=sys.stderr)
+    _log("Starting Playwright connection to Chrome over CDP")
 
     playwright = await async_playwright().start()
-    browser = await playwright.chromium.connect_over_cdp("http://localhost:9222")
-    
-    # Get the first browser context and page (or create one)
-    context = browser.contexts[0] if browser.contexts else await browser.new_context()
-    page = context.pages[0] if context.pages else await context.new_page()
+    try:
+        _log("Connecting Playwright to Chrome at http://127.0.0.1:9222")
+        browser = await playwright.chromium.connect_over_cdp("http://127.0.0.1:9222")
+        _log(f"Connected to Chrome ({len(browser.contexts)} existing context(s))")
 
-    # Navigate to LinkedIn feed to check login
-    await page.goto("https://www.linkedin.com/feed/", wait_until="domcontentloaded", timeout=30000)
-    await page.wait_for_timeout(3000)  # Give LinkedIn time to redirect if not logged in
+        # Get the first browser context and page (or create one)
+        context = browser.contexts[0] if browser.contexts else await browser.new_context()
+        page = context.pages[0] if context.pages else await context.new_page()
+        _log(f"Using browser page: {page.url or 'new page'}")
 
-    current_url = page.url
-    login_indicators = ["login", "checkpoint", "authwall", "uas/login", "signup"]
-    
-    is_logged_in = not any(indicator in current_url.lower() for indicator in login_indicators)
-
-    if is_logged_in:
-        print("✅ LinkedIn login detected — proceeding with search!", file=sys.stderr)
-        await playwright.stop()
-        return
-
-    # ── User is NOT logged in — wait for them ──
-    print("\n" + "=" * 60, file=sys.stderr)
-    print("⚠️  You are NOT logged into LinkedIn!", file=sys.stderr)
-    print("=" * 60, file=sys.stderr)
-    print("👉 A Chrome window has opened. Please log into LinkedIn.", file=sys.stderr)
-    print("👉 Once you see your LinkedIn feed, the script will", file=sys.stderr)
-    print("   automatically detect the login and continue.", file=sys.stderr)
-    print("=" * 60 + "\n", file=sys.stderr)
-
-    # Poll every 5 seconds until the user completes login
-    max_wait_seconds = 300  # Wait up to 5 minutes
-    elapsed = 0
-    poll_interval = 5
-
-    while elapsed < max_wait_seconds:
-        await page.wait_for_timeout(poll_interval * 1000)
-        elapsed += poll_interval
+        # Navigate to LinkedIn feed to check login
+        _log("Navigating to https://www.linkedin.com/feed/")
+        response = await page.goto("https://www.linkedin.com/feed/", wait_until="domcontentloaded", timeout=30000)
+        _log(f"LinkedIn navigation completed (HTTP {response.status if response else 'unknown'}; URL: {page.url})")
+        _log("Waiting 3 seconds for LinkedIn redirects and login state to settle")
+        await page.wait_for_timeout(3000)
 
         current_url = page.url
-        is_now_logged_in = not any(indicator in current_url.lower() for indicator in login_indicators)
+        login_indicators = ["login", "checkpoint", "authwall", "uas/login", "signup"]
+        is_logged_in = not any(indicator in current_url.lower() for indicator in login_indicators)
+        _log(f"LinkedIn login check URL: {current_url}")
 
-        if is_now_logged_in:
-            print("✅ LinkedIn login successful — proceeding with search!", file=sys.stderr)
-            await playwright.stop()
+        if is_logged_in:
+            _log("LinkedIn login detected; proceeding with search")
             return
 
-        minutes_remaining = (max_wait_seconds - elapsed) // 60
-        seconds_remaining = (max_wait_seconds - elapsed) % 60
-        print(f"⏳ Waiting for login... ({minutes_remaining}m {seconds_remaining}s remaining)", file=sys.stderr)
+        # ── User is NOT logged in — wait for them ──
+        _log("LinkedIn login is required. Log in using the opened Chrome window.")
+        _log("The script will poll the current LinkedIn URL every 5 seconds for up to 5 minutes.")
 
-    # Timed out
-    print("❌ Login timeout — no LinkedIn login detected after 5 minutes.", file=sys.stderr)
-    print("   Please log in and run the script again.", file=sys.stderr)
-    await playwright.stop()
-    sys.exit(1)
+        # Poll every 5 seconds until the user completes login
+        max_wait_seconds = 300  # Wait up to 5 minutes
+        elapsed = 0
+        poll_interval = 5
+
+        while elapsed < max_wait_seconds:
+            await page.wait_for_timeout(poll_interval * 1000)
+            elapsed += poll_interval
+
+            current_url = page.url
+            is_now_logged_in = not any(indicator in current_url.lower() for indicator in login_indicators)
+            _log(f"Login poll {elapsed}/{max_wait_seconds}s: {current_url}")
+
+            if is_now_logged_in:
+                _log("LinkedIn login successful; proceeding with search")
+                return
+
+        raise TimeoutError("LinkedIn login was not detected after 5 minutes")
+    finally:
+        _log("Closing Playwright CDP connection")
+        await playwright.stop()
 
 
 def read_topics_from_file(topics_file_path: str) -> list[dict]:
@@ -183,6 +219,7 @@ controller = Controller()
 )
 def finish_and_save_json(extraction: LinkedInExtraction):
     # Print the JSON to stdout for TypeScript to parse
+    _log(f"Extracted {len(extraction.posts)} LinkedIn post(s); returning JSON to TypeScript")
     print(extraction.model_dump_json())
     return ActionResult(is_done=True, extracted_content=extraction.model_dump_json())
 
@@ -233,6 +270,7 @@ async def main():
         print("Usage: python run_linkedin_search.py <topics_json_file> [min_comments]", file=sys.stderr)
         sys.exit(1)
 
+    _log(f"Reading topics from {sys.argv[1]}")
     topics = read_topics_from_file(sys.argv[1])
     
     # Read the minimum comments threshold (default 5)
@@ -243,20 +281,24 @@ async def main():
     skipped_urls = json.loads(skipped_urls_raw)
     
     # 🚨 LIMIT FOR TESTING SO IT DOESN'T TAKE 30 MINS 🚨
-    topics = topics[:1] 
+    if len(topics) > 1:
+        _log(f"Testing limit active: reducing {len(topics)} topics to the first topic")
+    topics = topics[:1]
     
-    print(f"[run_linkedin_search] Searching LinkedIn for {len(topics)} topics (min {min_comments} comments)...", file=sys.stderr)
+    _log(f"Searching LinkedIn for {len(topics)} topic(s) (minimum {min_comments} comments)")
     if skipped_urls:
-        print(f"[run_linkedin_search] Skipping {len(skipped_urls)} previously rejected post(s)", file=sys.stderr)
+        _log(f"Skipping {len(skipped_urls)} previously rejected post(s)")
 
+    _log("Preparing Chrome")
     launch_chrome_with_remote_debugging()
     
     # ── Pre-flight: make sure the user is logged into LinkedIn ──
     await ensure_linkedin_login()
-    
+
     intelliModel_model          = create_intelliModel_llm()
     cdp_browser_session = connect_to_running_chrome()
     search_task         = build_linkedin_search_task(topics, min_comments, skipped_urls)
+    _log("Starting browser-use LinkedIn search agent (maximum 10 steps)")
 
     agent = Agent(
         task=search_task,
@@ -268,6 +310,7 @@ async def main():
     )
 
     raw_agent_output = await agent.run()
+    _log(f"browser-use agent finished ({type(raw_agent_output).__name__})")
 
 if __name__ == "__main__":
     asyncio.run(main())

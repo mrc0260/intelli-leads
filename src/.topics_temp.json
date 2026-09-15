@@ -1,0 +1,102 @@
+[
+  {
+    "id": "tenant-communication-delays",
+    "name": "tenant communication delays",
+    "description": "Property managers struggling with slow or unresponsive tenant communication leading to delays in issue resolution and tenant dissatisfaction",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  },
+  {
+    "id": "contractor-coordination-challenges",
+    "name": "contractor coordination challenges",
+    "description": "Challenges in coordinating multiple contractors for property maintenance and repairs, including scheduling and accountability issues",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  },
+  {
+    "id": "manual-rent-collection",
+    "name": "manual rent collection",
+    "description": "Frustrations with manual rent collection processes and chasing late payments, consuming significant administrative time",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  },
+  {
+    "id": "property-inspection-tracking",
+    "name": "property inspection tracking",
+    "description": "Time-consuming manual tracking of property inspections and compliance documentation, leading to errors and missed deadlines",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  },
+  {
+    "id": "repair-request-prioritization",
+    "name": "repair request prioritization",
+    "description": "Difficulty in managing and prioritizing repair requests from tenants, especially when facing high volumes",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  },
+  {
+    "id": "pm-software-cost-concerns",
+    "name": "PM software cost concerns",
+    "description": "Worries about the high cost of property management software and hidden fees, impacting budget and ROI",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  },
+  {
+    "id": "spreadsheet-property-management",
+    "name": "spreadsheet property management",
+    "description": "Using spreadsheets as a workaround for property management tasks, leading to data silos, errors, and inefficiencies",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  },
+  {
+    "id": "uk-property-regulation-updates",
+    "name": "UK property regulation updates",
+    "description": "Keeping up with new UK regulations and compliance requirements in property management, such as safety standards and tenancy laws",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  },
+  {
+    "id": "tenant-complaint-resolution",
+    "name": "tenant complaint resolution",
+    "description": "Dealing with frequent tenant complaints and seeking advice on effective strategies to resolve issues and improve satisfaction",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  },
+  {
+    "id": "maintenance-request-overload",
+    "name": "maintenance request overload",
+    "description": "Handling a high volume of maintenance requests without a proper system, leading to delays and tenant frustration, triggering a search for better solutions",
+    "category": "other",
+    "relatedTerms": [],
+    "customerRelevance": 0.5,
+    "initialConfidence": 0.5,
+    "reasoning": ""
+  }
+]

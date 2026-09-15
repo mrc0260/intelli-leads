@@ -29,7 +29,7 @@ function printWelcomeBanner(): void {
   console.log(`│                                                                              │`);
   console.log(`│  Tips:                                                                       │`);
   console.log(`│    • Include the industry and geography                                      │`);
-  console.log(`│    • Describe who the customer is (not engineers or developers)              │`);
+  console.log(`│    • Describe who the customer is                                            │`);
   console.log(`│    • Mention the type of problems or topics you want to find                 │`);
   console.log(`└${horizontalRule}┘\n`);
 }

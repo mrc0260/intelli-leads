@@ -5321,3 +5321,162 @@ INFO     [BrowserSession] 📢 on_BrowserStopEvent - Calling reset() (force=True
 INFO     [BrowserSession] [SessionManager] Cleared all owned data (targets, sessions, mappings)
 INFO     [BrowserSession] ✅ Browser session reset complete
 INFO     [BrowserSession] ✅ Browser session reset complete
+INFO     [service] Using anonymized telemetry, see https://docs.browser-use.com/development/monitoring/telemetry.
+[run_linkedin_search] Reading topics from /Users/mrc/code/intelli-leads/intelli-leads-mrc0260-PUBLIC-repo-OFFICIAL/src/.topics_temp.json
+[run_linkedin_search] Testing limit active: reducing 10 topics to the first topic
+[run_linkedin_search] Searching LinkedIn for 1 topic(s) (minimum 1 comments)
+[run_linkedin_search] Preparing Chrome
+[run_linkedin_search] Locating Chrome executable
+[run_linkedin_search] Chrome executable: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+[run_linkedin_search] Chrome profile directory: /Users/mrc/code/intelli-leads/intelli-leads-mrc0260-PUBLIC-repo-OFFICIAL/chrome_profile
+[run_linkedin_search] Launching Chrome with remote debugging enabled on port 9222
+[run_linkedin_search] Waiting for Chrome remote debugging at http://127.0.0.1:9222/json/version
+
+DevTools listening on ws://127.0.0.1:9222/devtools/browser/a97e24f5-55ca-4a6b-8118-cd76f6356e52
+Trying to load the allocator multiple times. This is *not* supported.
+[run_linkedin_search] Chrome remote debugging is ready
+[run_linkedin_search] Starting Playwright connection to Chrome over CDP
+[run_linkedin_search] Connecting Playwright to Chrome at http://127.0.0.1:9222
+[run_linkedin_search] Connected to Chrome (1 existing context(s))
+[run_linkedin_search] Using browser page: chrome://new-tab-page/
+[run_linkedin_search] Navigating to https://www.linkedin.com/feed/
+[15018:90802:0915/153319.708897:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[15018:90802:0915/153319.708971:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[15018:90802:0915/153319.711141:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: PHONE_REGISTRATION_ERROR
+[run_linkedin_search] LinkedIn navigation completed (HTTP 200; URL: https://www.linkedin.com/uas/login?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F)
+[run_linkedin_search] Waiting 3 seconds for LinkedIn redirects and login state to settle
+[15027:90890:0915/153320.332880:ERROR:services/network/p2p/socket_manager.cc:145] Failed to resolve address for stun.l.google.com., errorcode: -105
+[run_linkedin_search] LinkedIn login check URL: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] LinkedIn login is required. Log in using the opened Chrome window.
+[run_linkedin_search] The script will poll the current LinkedIn URL every 5 seconds for up to 5 minutes.
+[run_linkedin_search] Login poll 5/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+Created TensorFlow Lite XNNPACK delegate for CPU.
+[run_linkedin_search] Login poll 10/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[15158:92429:0915/153336.037704:VERBOSE1:chrome/updater/updater.cc:374] Version: 152.0.7933.0, opt, ARM_64, command line: /Users/mrc/Library/Application Support/Google/GoogleUpdater/152.0.7933.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake-all --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2
+[15158:92429:0915/153336.038201:VERBOSE1:chrome/updater/updater.cc:377] OS version: 26.2.0, arch: arm64, System uptime (seconds): 3023, parent pid: 15018
+[15158:92429:0915/153336.039523:VERBOSE1:chrome/updater/updater.cc:382] Available disk space in install directory (/Users/mrc/Library/Application Support/Google/GoogleUpdater): 305967144960B (284.954GiB) / 494332366848B (460.383GiB)
+[15158:92429:0915/153336.039533:VERBOSE1:chrome/updater/updater.cc:386] Available disk space in temporary directory (/var/folders/8b/zjw_78w9015f8z8nh0_c4x_m0000gn/T/): 305967144960B (284.954GiB) / 494332366848B (460.383GiB)
+[15158:92429:0915/153336.039580:VERBOSE2:chrome/updater/event_history.cc:265] Emitted a UPDATER_PROCESS START event to the history log
+[15160:92433:0915/153336.045748:VERBOSE1:chrome/updater/updater.cc:374] Version: 152.0.7933.0, opt, ARM_64, command line: /Users/mrc/Library/Application Support/Google/GoogleUpdater/152.0.7933.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --crash-handler --database=/Users/mrc/Library/Application Support/Google/GoogleUpdater/152.0.7933.0/Crashpad --url=https://clients2.google.com/cr/report --annotation=prod=Update4 --annotation=ver=152.0.7933.0 --handshake-fd=6 --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2
+[15160:92433:0915/153336.046125:VERBOSE1:chrome/updater/updater.cc:377] OS version: 26.2.0, arch: arm64, System uptime (seconds): 3023, parent pid: 1
+[15160:92433:0915/153336.048200:VERBOSE1:chrome/updater/updater.cc:382] Available disk space in install directory (/Users/mrc/Library/Application Support/Google/GoogleUpdater): 305967140864B (284.954GiB) / 494332366848B (460.383GiB)
+[15160:92433:0915/153336.048209:VERBOSE1:chrome/updater/updater.cc:386] Available disk space in temporary directory (/var/folders/8b/zjw_78w9015f8z8nh0_c4x_m0000gn/T/): 305967140864B (284.954GiB) / 494332366848B (460.383GiB)
+[15160:92433:0915/153336.048755:VERBOSE2:chrome/updater/event_history.cc:265] Emitted a UPDATER_PROCESS START event to the history log
+[15158:92429:0915/153336.049171:VERBOSE1:chrome/updater/crash_reporter.cc:124] Crash handler launched and ready.
+[15158:92429:0915/153336.050000:VERBOSE1:chrome/updater/crash_client.cc:108] Found 0 completed crash reports
+[15158:92429:0915/153336.050056:VERBOSE1:chrome/updater/crash_client.cc:132] Found 0 pending crash reports
+[15158:92429:0915/153336.050109:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/mrc/Library/Application Support/Google/RLZ/Crashpad/settings.dat: No such file or directory (2)
+[15158:92429:0915/153336.050524:VERBOSE1:chrome/updater/updater.cc:105] Crash reporting initialized.
+[15158:92441:0915/153336.050768:VERBOSE1:chrome/updater/app/app_wakeall.cc:58] Launching `/Users/mrc/Library/Application Support/Google/GoogleUpdater/152.0.7933.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake`
+[15161:92445:0915/153336.058099:VERBOSE1:chrome/updater/updater.cc:374] Version: 152.0.7933.0, opt, ARM_64, command line: /Users/mrc/Library/Application Support/Google/GoogleUpdater/152.0.7933.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2
+[15161:92445:0915/153336.058497:VERBOSE1:chrome/updater/updater.cc:377] OS version: 26.2.0, arch: arm64, System uptime (seconds): 3023, parent pid: 15158
+[15161:92445:0915/153336.059872:VERBOSE1:chrome/updater/updater.cc:382] Available disk space in install directory (/Users/mrc/Library/Application Support/Google/GoogleUpdater): 305967140864B (284.954GiB) / 494332366848B (460.383GiB)
+[15161:92445:0915/153336.059881:VERBOSE1:chrome/updater/updater.cc:386] Available disk space in temporary directory (/var/folders/8b/zjw_78w9015f8z8nh0_c4x_m0000gn/T/): 305967140864B (284.954GiB) / 494332366848B (460.383GiB)
+[15161:92445:0915/153336.059981:VERBOSE2:chrome/updater/event_history.cc:265] Emitted a UPDATER_PROCESS START event to the history log
+[15163:92450:0915/153336.072220:VERBOSE1:chrome/updater/updater.cc:374] Version: 152.0.7933.0, opt, ARM_64, command line: /Users/mrc/Library/Application Support/Google/GoogleUpdater/152.0.7933.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --crash-handler --database=/Users/mrc/Library/Application Support/Google/GoogleUpdater/152.0.7933.0/Crashpad --url=https://clients2.google.com/cr/report --annotation=prod=Update4 --annotation=ver=152.0.7933.0 --handshake-fd=6 --enable-logging --vmodule=*/components/update_client/*=2,*/chrome/enterprise_companion/*=2,*/chrome/updater/*=2
+[15163:92450:0915/153336.072659:VERBOSE1:chrome/updater/updater.cc:377] OS version: 26.2.0, arch: arm64, System uptime (seconds): 3023, parent pid: 1
+[15163:92450:0915/153336.074575:VERBOSE1:chrome/updater/updater.cc:382] Available disk space in install directory (/Users/mrc/Library/Application Support/Google/GoogleUpdater): 305967140864B (284.954GiB) / 494332366848B (460.383GiB)
+[15163:92450:0915/153336.074585:VERBOSE1:chrome/updater/updater.cc:386] Available disk space in temporary directory (/var/folders/8b/zjw_78w9015f8z8nh0_c4x_m0000gn/T/): 305967140864B (284.954GiB) / 494332366848B (460.383GiB)
+[15163:92450:0915/153336.074651:VERBOSE2:chrome/updater/event_history.cc:265] Emitted a UPDATER_PROCESS START event to the history log
+[15161:92445:0915/153336.075309:VERBOSE1:chrome/updater/crash_reporter.cc:124] Crash handler launched and ready.
+[15161:92445:0915/153336.076162:VERBOSE1:chrome/updater/crash_client.cc:108] Found 0 completed crash reports
+[15161:92445:0915/153336.076236:VERBOSE1:chrome/updater/crash_client.cc:132] Found 0 pending crash reports
+[15161:92445:0915/153336.076295:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /Users/mrc/Library/Application Support/Google/RLZ/Crashpad/settings.dat: No such file or directory (2)
+[15161:92445:0915/153336.076456:VERBOSE1:chrome/updater/updater.cc:105] Crash reporting initialized.
+[15161:92445:0915/153336.076590:VERBOSE1:chrome/updater/ipc/update_service_internal_proxy_mojo.cc:61] Run
+[run_linkedin_search] Login poll 15/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[15018:90802:0915/153342.339993:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+[run_linkedin_search] Login poll 20/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 25/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[15161:92445:0915/153351.606908:VERBOSE1:chrome/updater/app/app.cc:52] Shutdown: 0
+[15161:92445:0915/153351.607610:VERBOSE2:chrome/updater/event_history.cc:265] Emitted a UPDATER_PROCESS END event to the history log
+[15161:92445:0915/153351.607647:VERBOSE1:chrome/updater/updater.cc:419] UpdaterMain (--wake) returned 0.
+[15158:92441:0915/153351.775344:VERBOSE1:chrome/updater/app/app_wakeall.cc:68] `/Users/mrc/Library/Application Support/Google/GoogleUpdater/152.0.7933.0/GoogleUpdater.app/Contents/MacOS/GoogleUpdater --wake` exited 0
+[15158:92429:0915/153351.775729:VERBOSE1:chrome/updater/app/app.cc:52] Shutdown: 0
+[15158:92429:0915/153351.776403:VERBOSE2:chrome/updater/event_history.cc:265] Emitted a UPDATER_PROCESS END event to the history log
+[15158:92429:0915/153351.776479:VERBOSE1:chrome/updater/updater.cc:419] UpdaterMain (--wake-all) returned 0.
+[run_linkedin_search] Login poll 30/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 35/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[15163:92450:0915/153401.617362:VERBOSE2:chrome/updater/event_history.cc:265] Emitted a UPDATER_PROCESS END event to the history log
+[15163:92450:0915/153401.617417:VERBOSE1:chrome/updater/updater.cc:419] UpdaterMain (--crash-handler) returned 0.
+[15160:92433:0915/153401.619223:VERBOSE2:chrome/updater/event_history.cc:265] Emitted a UPDATER_PROCESS END event to the history log
+[15160:92433:0915/153401.619266:VERBOSE1:chrome/updater/updater.cc:419] UpdaterMain (--crash-handler) returned 0.
+[run_linkedin_search] Login poll 40/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 45/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 50/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 55/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 60/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 65/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[15018:90802:0915/153428.527117:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+[run_linkedin_search] Login poll 70/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 75/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 80/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 85/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 90/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 95/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 100/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 105/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 110/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 115/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 120/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 125/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 130/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 135/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 140/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 145/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 150/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[15018:90802:0915/153555.655001:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
+[run_linkedin_search] Login poll 155/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 160/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 165/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 170/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+Trying to load the allocator multiple times. This is *not* supported.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1789472177.039954   96999 environment.cc:525] Selected adapter: Apple M5, arch=metal-3, vendor=apple, backend=Metal, adapterType=Integrated GPU
+I0000 00:00:1789472177.045727   97012 environment.cc:525] Selected adapter: Apple M5, arch=metal-3, vendor=apple, backend=Metal, adapterType=Integrated GPU
+[run_linkedin_search] Login poll 175/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 180/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 185/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 190/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 195/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 200/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 205/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 210/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 215/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 220/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 225/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 230/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 235/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 240/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 245/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 250/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 255/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 260/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 265/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 270/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 275/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 280/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 285/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 290/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 295/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Login poll 300/300s: https://www.linkedin.com/login/?session_redirect=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2F
+[run_linkedin_search] Closing Playwright CDP connection
+Traceback (most recent call last):
+  File "/Users/mrc/code/intelli-leads/intelli-leads-mrc0260-PUBLIC-repo-OFFICIAL/src/run_linkedin_search.py", line 316, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 196, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/mrc/code/intelli-leads/intelli-leads-mrc0260-PUBLIC-repo-OFFICIAL/src/run_linkedin_search.py", line 296, in main
+    await ensure_linkedin_login()
+  File "/Users/mrc/code/intelli-leads/intelli-leads-mrc0260-PUBLIC-repo-OFFICIAL/src/run_linkedin_search.py", line 169, in ensure_linkedin_login
+    raise TimeoutError("LinkedIn login was not detected after 5 minutes")
+TimeoutError: LinkedIn login was not detected after 5 minutes
+[15018:90802:0915/153907.101621:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT
