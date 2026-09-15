@@ -9,7 +9,7 @@ import { writeLinkedInSearchMarkdown } from "../utils/linkedin-markdown.js";
 
 const PYTHON_EXECUTABLE         = resolvePythonExecutable();
 const LINKEDIN_SEARCH_SCRIPT    = path.resolve(process.cwd(), "src", "run_linkedin_search.py");
-const TOPICS_TEMP_FILE          = path.resolve(process.cwd(), "src", ".topics_temp.json");
+const OUTPUT_DIRECTORY          = path.resolve(process.cwd(), "output");
 
 function resolvePythonExecutable(): string {
   const configuredExecutable = process.env.PYTHON_EXECUTABLE?.trim();
@@ -26,12 +26,24 @@ function resolvePythonExecutable(): string {
   return process.platform === "win32" ? "python" : "python3";
 }
 
-function writeTopicsToTempFile(topics: Topic[]): void {
-  fs.writeFileSync(TOPICS_TEMP_FILE, JSON.stringify(topics, null, 2), "utf-8");
+/** Zero-pad a number to two digits for timestamps. */
+function padTwoDigits(value: number): string {
+  return String(value).padStart(2, "0");
 }
 
-function cleanUpTopicsTempFile(): void {
-  if (fs.existsSync(TOPICS_TEMP_FILE)) fs.unlinkSync(TOPICS_TEMP_FILE);
+/** Build a filename-safe timestamp (YYYY-MM-DD_HH-MM-SS) for the given date. */
+function timestampStamp(capturedAt: Date): string {
+  const day = `${capturedAt.getFullYear()}-${padTwoDigits(capturedAt.getMonth() + 1)}-${padTwoDigits(capturedAt.getDate())}`;
+  const time = `${padTwoDigits(capturedAt.getHours())}-${padTwoDigits(capturedAt.getMinutes())}-${padTwoDigits(capturedAt.getSeconds())}`;
+  return `${day}_${time}`;
+}
+
+/** Write the discovered topics to a timestamped JSON file in the output folder. */
+function writeTopicsToFile(topics: Topic[]): string {
+  fs.mkdirSync(OUTPUT_DIRECTORY, { recursive: true });
+  const topicsFilePath = path.join(OUTPUT_DIRECTORY, `topics_${timestampStamp(new Date())}.json`);
+  fs.writeFileSync(topicsFilePath, JSON.stringify(topics, null, 2), "utf-8");
+  return topicsFilePath;
 }
 
 function parsePostsFromAgentOutput(rawOutput: string): LinkedInPost[] {
@@ -49,7 +61,7 @@ function parsePostsFromAgentOutput(rawOutput: string): LinkedInPost[] {
   }
 }
 
-function runLinkedInSearchScript(minComments: number, skippedUrls: string[], onProgress?: (msg: string) => void): Promise<string> {
+function runLinkedInSearchScript(topicsFilePath: string, minComments: number, skippedUrls: string[], onProgress?: (msg: string) => void): Promise<string> {
   return new Promise((resolveWithOutput, rejectWithError) => {
     let collectedOutput = "";
     let collectedStderr = "";
@@ -62,7 +74,6 @@ function runLinkedInSearchScript(minComments: number, skippedUrls: string[], onP
       if (settled) return false;
       settled = true;
       if (forceTerminationTimer) clearTimeout(forceTerminationTimer);
-      cleanUpTopicsTempFile();
       debugLogStream.end();
       return true;
     };
@@ -71,7 +82,7 @@ function runLinkedInSearchScript(minComments: number, skippedUrls: string[], onP
 
     const childProcess = spawn(
       PYTHON_EXECUTABLE,
-      [LINKEDIN_SEARCH_SCRIPT, TOPICS_TEMP_FILE, String(minComments)],
+      [LINKEDIN_SEARCH_SCRIPT, topicsFilePath, String(minComments)],
       {
         shell: false,
         stdio: ["inherit", "pipe", "pipe"],
@@ -207,7 +218,7 @@ export async function searchLinkedInTopics(state: ResearchState): Promise<Partia
 
   if (!state.topics?.length) throw new Error("searchLinkedInTopics requires topics in state");
 
-  writeTopicsToTempFile(state.topics as Topic[]);
+  const topicsFilePath = writeTopicsToFile(state.topics as Topic[]);
   
   const minComments = state.minComments ?? 0;
 
@@ -221,7 +232,7 @@ export async function searchLinkedInTopics(state: ResearchState): Promise<Partia
   let lastLoggedMsg = "";
 
   try {
-    const rawAgentOutput = await runLinkedInSearchScript(minComments, allSkippedUrls, (msg) => {
+    const rawAgentOutput = await runLinkedInSearchScript(topicsFilePath, minComments, allSkippedUrls, (msg) => {
       // Prevent line wrapping which breaks the spinner's clearLine()
       const maxLen = process.stdout.columns ? process.stdout.columns - 5 : 80;
       const truncatedMsg = msg.length > maxLen ? msg.substring(0, maxLen - 3) + "..." : msg;
@@ -248,3 +259,4 @@ export async function searchLinkedInTopics(state: ResearchState): Promise<Partia
     throw error;
   }
 }
+
