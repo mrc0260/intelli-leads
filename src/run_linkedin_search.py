@@ -352,7 +352,17 @@ async def main():
         max_steps=10,
     )
 
-    raw_agent_output = await agent.run()
+    try:
+        raw_agent_output = await agent.run()
+    except Exception as agent_error:
+        _log(f"browser-use agent failed: {type(agent_error).__name__}: {agent_error}")
+        raise
+    finally:
+        _log("Stopping browser-use session after extraction")
+        try:
+            await cdp_browser_session.stop()
+        except Exception as session_error:
+            _log(f"Browser-use session cleanup failed: {type(session_error).__name__}: {session_error}")
     _log(f"browser-use agent finished ({type(raw_agent_output).__name__})")
 
 if __name__ == "__main__":
