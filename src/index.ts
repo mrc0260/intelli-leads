@@ -1,6 +1,9 @@
 import { createResearchGraph } from "./graph/graph.js";
+import type { LinkedInPost } from "./schemas/linkedin-post.js";
 import * as dotenv from "dotenv";
 import * as readline from "readline";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 dotenv.config();
 
@@ -66,6 +69,93 @@ async function promptUserForMinComments(): Promise<number> {
       resolveWithMinComments(minComments);
     });
   });
+}
+
+// ─── Markdown export ────────────────────────────────────────────────────────
+
+/** Zero-pad a number to two digits for timestamps. */
+function padTwoDigits(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+/** Format a Date as both a filename-safe stamp and a human-readable label. */
+function timestampParts(capturedAt: Date): { stamp: string; display: string } {
+  const day = `${capturedAt.getFullYear()}-${padTwoDigits(capturedAt.getMonth() + 1)}-${padTwoDigits(capturedAt.getDate())}`;
+  const time = `${padTwoDigits(capturedAt.getHours())}-${padTwoDigits(capturedAt.getMinutes())}-${padTwoDigits(capturedAt.getSeconds())}`;
+  return { stamp: `${day}_${time}`, display: `${day} ${time.replaceAll("-", ":")}` };
+}
+
+/** Turn a block of text into a Markdown blockquote. */
+function toMarkdownQuote(text: string): string {
+  const trimmed = (text ?? "").trim();
+  if (!trimmed) return "> (not provided)";
+  return trimmed
+    .split(/\r?\n/)
+    .map((line) => `> ${line || " "}`)
+    .join("\n");
+}
+
+/** Build the Markdown document that lists the scraped candidate posts. */
+function buildCandidatePostsMarkdown(
+  posts: LinkedInPost[],
+  userRequest: string,
+  minComments: number,
+  capturedAt: Date,
+): string {
+  const { display } = timestampParts(capturedAt);
+  const lines: string[] = [
+    "# Scraped LinkedIn Posts",
+    "",
+    `- Captured: ${display}`,
+    `- Posts found: ${posts.length}`,
+    `- Minimum comments per post: ${minComments}`,
+    "",
+    "## Original Request",
+    "",
+    toMarkdownQuote(userRequest),
+    "",
+    "## Posts",
+    "",
+  ];
+
+  if (!posts.length) {
+    lines.push("No posts were returned.", "");
+    return `${lines.join("\n")}\n`;
+  }
+
+  posts.forEach((post: LinkedInPost, postIndex: number) => {
+    const author = post.authorName || "Unknown author";
+    const jobTitle = post.jobTitle || "Unknown role";
+    const company = post.company || "Unknown company";
+    lines.push(
+      `### ${postIndex + 1}. ${author} — ${jobTitle} @ ${company}`,
+      "",
+      `- Post URL: ${post.postUrl || "Not available"}`,
+      `- Author URL: ${post.authorUrl || "Not available"}`,
+      `- Location: ${post.location || "Not provided"}`,
+      `- Reactions: ${post.reactionCount ?? 0}`,
+      `- Comments: ${post.commentCount ?? 0}`,
+      `- Discovered: ${post.discoveredAt || display}`,
+      "",
+    );
+  });
+
+  return `${lines.join("\n")}\n`;
+}
+
+/** Persist the scraped candidate posts as a Markdown file in the /output folder. */
+function saveCandidatePostsToMarkdown(
+  posts: LinkedInPost[],
+  userRequest: string,
+  minComments: number,
+): string {
+  const outputDirectory = path.resolve(process.cwd(), "output");
+  fs.mkdirSync(outputDirectory, { recursive: true });
+  const capturedAt = new Date();
+  const { stamp } = timestampParts(capturedAt);
+  const outputPath = path.join(outputDirectory, `scraped-posts_${stamp}.md`);
+  fs.writeFileSync(outputPath, buildCandidatePostsMarkdown(posts, userRequest, minComments, capturedAt), "utf-8");
+  return outputPath;
 }
 
 // ─── Pipeline runner ──────────────────────────────────────────────────────────
@@ -137,7 +227,8 @@ async function runResearchPipeline(userRequest: string, minComments: number): Pr
     console.log(`   Reactions: ${post.reactionCount}  Comments: ${post.commentCount}`);
     console.log(`   ${post.postUrl}`);
   });
-
+  const markdownPath = saveCandidatePostsToMarkdown(finalState.candidatePosts ?? [], userRequest, minComments);
+  console.log(`\n📝 Scraped posts list saved to ${markdownPath}`);
 }
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
@@ -153,3 +244,4 @@ main().catch((pipelineError) => {
   console.error("❌ Pipeline Error:", pipelineError);
   process.exit(1);
 });
+

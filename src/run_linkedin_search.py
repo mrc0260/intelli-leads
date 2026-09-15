@@ -311,37 +311,79 @@ async def _collect_live_linkedin_urls() -> set[str]:
     return live_urls
 
 
+def _path_only(canonical_url: str) -> str:
+    """Return a host+path form (no query/fragment) for lenient URL matching."""
+    parsed = urlsplit(canonical_url)
+    return urlunsplit((parsed.scheme, parsed.hostname or "", parsed.path, "", ""))
+
+
 def _validated_live_url(
     value: str | None,
     live_urls: set[str],
-    required_path: str | None = None,
+    required_paths: tuple[str, ...] | None = None,
     required_query: str | None = None,
 ) -> str | None:
     canonical_url = _canonical_link(value)
     if not canonical_url or canonical_url not in live_urls:
         return None
     parsed = urlsplit(canonical_url)
-    if required_path and required_path not in parsed.path.lower():
+    if required_paths and not any(required_path in parsed.path.lower() for required_path in required_paths):
         return None
     if required_query and required_query not in f"{parsed.path}?{parsed.query}".lower():
         return None
     return value.strip() if value else None
 
 
+def _validated_live_url_by_path(
+    value: str | None,
+    live_paths: set[str],
+    required_paths: tuple[str, ...] | None = None,
+) -> str | None:
+    """Lenient fallback that matches a URL against live pages by host+path only,
+    so tracking query differences (e.g. ?trk=...) do not blank out a valid URL."""
+    canonical_url = _canonical_link(value)
+    if not canonical_url:
+        return None
+    parsed = urlsplit(canonical_url)
+    if required_paths and not any(required_path in parsed.path.lower() for required_path in required_paths):
+        return None
+    if _path_only(canonical_url) not in live_paths:
+        return None
+    return value.strip() if value else None
+
+
 def _validate_extraction_urls(extraction: LinkedInExtraction, live_urls: set[str]) -> LinkedInExtraction:
+    # LinkedIn exposes post links both as /feed/update/... and /posts/... and the
+    # anchors carry tracking query params. Match exact URLs first, then fall back
+    # to a host+path comparison so legitimate post URLs are not blanked out.
+    live_paths = {_path_only(url) for url in live_urls}
+    post_paths = ("/feed/update/", "/posts/")
     for post in extraction.posts:
-        post.postUrl = _validated_live_url(post.postUrl, live_urls, required_path="/feed/update/") or ""
-        post.authorUrl = _validated_live_url(post.authorUrl, live_urls) or ""
+        post.postUrl = (
+            _validated_live_url(post.postUrl, live_urls, required_paths=post_paths)
+            or _validated_live_url_by_path(post.postUrl, live_paths, required_paths=post_paths)
+            or ""
+        )
+        post.authorUrl = (
+            _validated_live_url(post.authorUrl, live_urls)
+            or _validated_live_url_by_path(post.authorUrl, live_paths)
+            or ""
+        )
         for interaction in post.interactions:
-            interaction.user_url = _validated_live_url(interaction.user_url, live_urls) or ""
+            interaction.user_url = (
+                _validated_live_url(interaction.user_url, live_urls)
+                or _validated_live_url_by_path(interaction.user_url, live_paths)
+                or ""
+            )
             interaction.comment_url = _validated_live_url(
                 interaction.comment_url,
                 live_urls,
                 required_query="comment",
             )
-            interaction.comment_reply_to_user_url = _validated_live_url(
-                interaction.comment_reply_to_user_url,
-                live_urls,
+            interaction.comment_reply_to_user_url = (
+                _validated_live_url(interaction.comment_reply_to_user_url, live_urls)
+                or _validated_live_url_by_path(interaction.comment_reply_to_user_url, live_paths)
+                or ""
             )
     return extraction
 
