@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fetchSavedPostUrls } from "./save-reactions-to-output.js";
+import { writeLinkedInSearchMarkdown } from "../utils/linkedin-markdown.js";
 
 const PYTHON_EXECUTABLE         = resolvePythonExecutable();
 const LINKEDIN_SEARCH_SCRIPT    = path.resolve(process.cwd(), "src", "run_linkedin_search.py");
@@ -189,8 +190,13 @@ export async function searchLinkedInTopics(state: ResearchState): Promise<Partia
     });
 
     const candidatePosts = parsePostsFromAgentOutput(rawAgentOutput);
+    const searchedTopics = (state.topics ?? [])
+      .map((topic) => topic.name)
+      .filter((topicName): topicName is string => Boolean(topicName));
+    const reportPath = writeLinkedInSearchMarkdown(candidatePosts, state.userInput ?? "", searchedTopics);
 
     spinner.stop(`Found ${candidatePosts.length} candidate posts across all topics`);
+    console.log(`[searchLinkedInTopics] Markdown report saved to ${reportPath}`);
     return { candidatePosts };
   } catch (error) {
     spinner.stop("Browser search failed; see the Python error above");

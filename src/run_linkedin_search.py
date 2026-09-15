@@ -3,6 +3,7 @@ import sys
 import json
 import asyncio
 import logging
+from urllib.parse import urlsplit, urlunsplit
 
 # Fix Windows console emoji encoding crash
 if sys.platform.startswith('win'):
@@ -231,6 +232,7 @@ class Interaction(BaseModel):
     username: str = Field(description="Name of the interacting user")
     value: str = Field(description="Reaction type (e.g. 'thumbs_up') or comment text")
     time: str = Field(description="Timestamp or relative time of the interaction")
+    comment_url: str | None = Field(None, description="Exact comment permalink copied from a page href; null when unavailable")
     comment_reply_to_user_url: str | None = Field(None, description="URL of user being replied to, if any")
 
 class LinkedInPost(BaseModel):
@@ -250,6 +252,9 @@ class LinkedInPost(BaseModel):
 class LinkedInExtraction(BaseModel):
     posts: list[LinkedInPost]
 
+
+latest_extraction: LinkedInExtraction | None = None
+
 from browser_use import Controller
 controller = Controller()
 
@@ -258,10 +263,85 @@ controller = Controller()
     param_model=LinkedInExtraction
 )
 def return_extracted_json(extraction: LinkedInExtraction):
-    # Print the JSON to stdout for TypeScript to parse
+    global latest_extraction
+    latest_extraction = extraction
     _log(f"Extracted {len(extraction.posts)} LinkedIn post(s); returning JSON to TypeScript")
-    print(extraction.model_dump_json())
     return ActionResult(is_done=True, extracted_content=extraction.model_dump_json())
+
+
+def _canonical_link(value: str | None) -> str | None:
+    if not value:
+        return None
+    try:
+        parsed = urlsplit(value.strip())
+    except ValueError:
+        return None
+
+    hostname = (parsed.hostname or "").lower()
+    if parsed.scheme.lower() != "https" or (hostname != "linkedin.com" and not hostname.endswith(".linkedin.com")):
+        return None
+    return urlunsplit((parsed.scheme.lower(), hostname, parsed.path, parsed.query, ""))
+
+
+async def _collect_live_linkedin_urls() -> set[str]:
+    """Read hrefs from the live page so model-generated URLs cannot be persisted as facts."""
+    from playwright.async_api import async_playwright
+
+    playwright = await async_playwright().start()
+    live_urls: set[str] = set()
+    try:
+        browser = await playwright.chromium.connect_over_cdp("http://127.0.0.1:9222")
+        for context in browser.contexts:
+            for page in context.pages:
+                hrefs = await page.locator("a[href]").evaluate_all(
+                    "anchors => anchors.map(anchor => anchor.href)"
+                )
+                live_urls.update(
+                    canonical_url
+                    for href in hrefs
+                    if (canonical_url := _canonical_link(href)) is not None
+                )
+    except Exception as verification_error:
+        _log(f"Could not verify live LinkedIn URLs: {type(verification_error).__name__}: {verification_error}")
+    finally:
+        await playwright.stop()
+    _log(f"Verified {len(live_urls)} LinkedIn href(s) from the live page")
+    return live_urls
+
+
+def _validated_live_url(
+    value: str | None,
+    live_urls: set[str],
+    required_path: str | None = None,
+    required_query: str | None = None,
+) -> str | None:
+    canonical_url = _canonical_link(value)
+    if not canonical_url or canonical_url not in live_urls:
+        return None
+    parsed = urlsplit(canonical_url)
+    if required_path and required_path not in parsed.path.lower():
+        return None
+    if required_query and required_query not in f"{parsed.path}?{parsed.query}".lower():
+        return None
+    return value.strip() if value else None
+
+
+def _validate_extraction_urls(extraction: LinkedInExtraction, live_urls: set[str]) -> LinkedInExtraction:
+    for post in extraction.posts:
+        post.postUrl = _validated_live_url(post.postUrl, live_urls, required_path="/feed/update/") or ""
+        post.authorUrl = _validated_live_url(post.authorUrl, live_urls) or ""
+        for interaction in post.interactions:
+            interaction.user_url = _validated_live_url(interaction.user_url, live_urls) or ""
+            interaction.comment_url = _validated_live_url(
+                interaction.comment_url,
+                live_urls,
+                required_query="comment",
+            )
+            interaction.comment_reply_to_user_url = _validated_live_url(
+                interaction.comment_reply_to_user_url,
+                live_urls,
+            )
+    return extraction
 
 def build_linkedin_search_task(topics: list[dict], min_comments: int = 5, skipped_urls: list[str] | None = None) -> str:
     """Build the browser-use task prompt for searching LinkedIn for all topics."""
@@ -291,7 +371,8 @@ CRITICAL INSTRUCTIONS - YOU MUST FOLLOW THESE EXACT STEPS IN ORDER:
 5. Wait 2 seconds for the comments to load.
 6. Use the `extract` tool to pull all the post data from the page.
    - Use the URL list returned by the `evaluate` step, together with the page links, to fill `postUrl` and `authorUrl` accurately.
-   - Extract EVERY visible comment (username, user_url, and comment text) into the `interactions` array!
+   - Extract EVERY visible comment (username, user_url, comment text, time, and comment_url) into the `interactions` array. `comment_url` must be the exact comment permalink href from the page or the evaluate result; use null when no exact href is available.
+   - Never invent or construct a comment_url. If the exact href is not present, use null.
 7. IMMEDIATELY call `return_extracted_json` with the extracted data.
    - Do NOT judge if the posts match the topic. If you extract ANY posts, you succeeded!
 
@@ -354,6 +435,13 @@ async def main():
 
     try:
         raw_agent_output = await agent.run()
+        if latest_extraction is None:
+            raise RuntimeError("browser-use finished without calling return_extracted_json")
+
+        live_linkedin_urls = await _collect_live_linkedin_urls()
+        validated_extraction = _validate_extraction_urls(latest_extraction, live_linkedin_urls)
+        print(validated_extraction.model_dump_json(), flush=True)
+        _log(f"Validated extraction for {len(validated_extraction.posts)} post(s); JSON sent to TypeScript")
     except Exception as agent_error:
         _log(f"browser-use agent failed: {type(agent_error).__name__}: {agent_error}")
         raise

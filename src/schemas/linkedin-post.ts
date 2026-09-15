@@ -6,6 +6,7 @@ export const InteractionSchema = z.object({
   username: z.string().describe("Name of the interacting user"),
   value: z.string().describe("Reaction type (e.g. 'thumbs_up') or comment text"),
   time: z.string().describe("Timestamp or relative time of the interaction"),
+  comment_url: z.string().optional().nullable().describe("Exact comment permalink from the page, or null if unavailable"),
   comment_reply_to_user_url: z.string().optional().nullable().describe("URL of user being replied to, if any"),
 });
 
