@@ -254,10 +254,10 @@ from browser_use import Controller
 controller = Controller()
 
 @controller.action(
-    'Call this tool when you have extracted the post and interactions. You MUST pass the data in this exact JSON structure.',
+    'Call this tool when you have extracted the post and interactions. It returns the data to the TypeScript pipeline; it does not write a file. You MUST pass the data in this exact JSON structure.',
     param_model=LinkedInExtraction
 )
-def finish_and_save_json(extraction: LinkedInExtraction):
+def return_extracted_json(extraction: LinkedInExtraction):
     # Print the JSON to stdout for TypeScript to parse
     _log(f"Extracted {len(extraction.posts)} LinkedIn post(s); returning JSON to TypeScript")
     print(extraction.model_dump_json())
@@ -286,13 +286,13 @@ CRITICAL INSTRUCTIONS - YOU MUST FOLLOW THESE EXACT STEPS IN ORDER:
 1. Use the LinkedIn search bar to search for the topic term.
 2. CHECK if the results are already filtered to "Posts". If they are NOT, click the "Posts" filter.
 3. Scroll down exactly ONCE to load more posts.
-4. Expand ALL hidden comments and replies, AND expose all hidden URLs as text. You MUST use the `evaluate` tool to run this exact JS code:
-   `document.querySelectorAll('button').forEach(b => {{ const t = b.innerText?.toLowerCase() || ""; if(t.includes("comment") || t.includes("replies") || t.includes("reply") || t.includes("load more")) b.click(); }}); document.querySelectorAll('a').forEach(a => {{ if(a.href && a.href.includes("linkedin.com") && !a.href.includes("hashtag")) {{ const p = document.createElement("span"); p.innerText = " [URL: " + a.href + "] "; p.style.color = "red"; p.style.fontWeight = "bold"; a.parentNode.insertBefore(p, a.nextSibling); }} }});`
+4. Expand ALL hidden comments and replies, then use the `evaluate` tool to return the LinkedIn URLs from the results without changing the page visually. Run this JavaScript:
+   `(() => {{ document.querySelectorAll('button').forEach(b => {{ const t = b.innerText?.toLowerCase() || ""; if(t.includes("comment") || t.includes("replies") || t.includes("reply") || t.includes("load more")) b.click(); }}); return [...new Set([...document.querySelectorAll('main a[href*="linkedin.com"]')].map(a => a.href).filter(href => href && !href.includes("hashtag")))]; }})()`
 5. Wait 2 seconds for the comments to load.
 6. Use the `extract` tool to pull all the post data from the page.
-   - Because you ran the JS in step 4, the URLs are now visibly written on the screen as `[URL: https...]`! You have NO EXCUSE to miss the `postUrl` or `authorUrl`! Grab them directly from the red text!
+   - Use the URL list returned by the `evaluate` step, together with the page links, to fill `postUrl` and `authorUrl` accurately.
    - Extract EVERY visible comment (username, user_url, and comment text) into the `interactions` array!
-7. IMMEDIATELY call `finish_and_save_json` with the extracted data.
+7. IMMEDIATELY call `return_extracted_json` with the extracted data.
    - Do NOT judge if the posts match the topic. If you extract ANY posts, you succeeded!
 
 Search LinkedIn for each of the following topics:
@@ -302,7 +302,7 @@ TOPICS TO SEARCH (Keywords only):
 {topic_list}
 
 WHEN FINISHED: 
-You MUST call the `finish_and_save_json` tool with the extracted data. DO NOT USE THE DEFAULT DONE TOOL. DO NOT WRITE TO MARKDOWN FILES. Just call `finish_and_save_json`!
+You MUST call the `return_extracted_json` tool with the extracted data. DO NOT USE THE DEFAULT DONE TOOL. DO NOT WRITE TO MARKDOWN FILES. Just call `return_extracted_json`!
 """
 
 async def main():
@@ -346,6 +346,9 @@ async def main():
         browser_session=cdp_browser_session,
         controller=controller,
         use_vision=False,
+        # The custom finish action is authoritative; the optional post-run judge
+        # can re-enter browser/captcha handling after the task already succeeded.
+        use_judge=False,
         max_steps=10,
     )
 

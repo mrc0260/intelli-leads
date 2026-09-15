@@ -115,7 +115,7 @@ function runLinkedInSearchScript(minComments: number, skippedUrls: string[], onP
                else if (actionName === 'scroll') onProgress("Agent action: Scrolling down to load more posts...");
                else if (actionName === 'extract') onProgress("Agent action: Extracting posts from the screen...");
                else if (actionName === 'evaluate') onProgress("Agent action: Running Javascript to extract URLs...");
-               else if (actionName === 'finish_and_save_json') onProgress("Agent action: Saving extracted posts!");
+               else if (actionName === 'return_extracted_json') onProgress("Agent action: Returning extracted posts to the pipeline...");
              }
           }
         }
