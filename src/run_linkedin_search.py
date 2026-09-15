@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import asyncio
+import logging
 
 # Fix Windows console emoji encoding crash
 if sys.platform.startswith('win'):
@@ -16,6 +17,39 @@ from browser_use import Agent
 from browser_use.browser.session import BrowserSession
 
 
+class _HidePromptLogs(logging.Filter):
+    """Keep browser-use status/errors visible without printing model prompts."""
+
+    _PROMPT_MARKERS = (
+        "🎯 Task:",
+        "LLM prompt:",
+        "Messages sent to LLM:",
+    )
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        message = record.getMessage()
+        return not any(marker in message for marker in self._PROMPT_MARKERS)
+
+
+def _hide_browser_use_prompts() -> None:
+    prompt_filter = _HidePromptLogs()
+    service_logger = logging.getLogger("browser_use.agent.service")
+    service_logger.addFilter(prompt_filter)
+
+    # browser-use normally attaches its stream handler to the package logger.
+    # Filtering the handlers also covers prompt records from future sub-loggers.
+    loggers_and_handlers = [
+        logging.getLogger("browser_use"),
+        logging.getLogger(),
+    ]
+    for logger in loggers_and_handlers:
+        for handler in logger.handlers:
+            handler.addFilter(prompt_filter)
+
+
+_hide_browser_use_prompts()
+
+
 def _log(message: str) -> None:
     """Write a flushed worker status line so the parent process can show it immediately."""
     print(f"[run_linkedin_search] {message}", file=sys.stderr, flush=True)
@@ -26,12 +60,18 @@ def _log(message: str) -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def create_intelliModel_llm() -> ChatOpenAI:
-    """Creates the IntelliModel 2.5 model configured for the IntelliDesign API endpoint."""
-    _log(f"Configuring IntelliModel 2.5 (LLM_API_KEY {'set' if os.environ.get('LLM_API_KEY') else 'missing'})")
+    """Create the OpenAI-compatible model using the shared project configuration."""
+    model_name = os.environ.get("LLM_MODEL", "")
+    base_url = os.environ.get("MODEL_BASE_URL", "")
+    api_key = os.environ.get("LLM_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("LLM_API_KEY is missing; cannot start the browser-use agent")
+
+    _log(f"Configuring LLM model={model_name} base_url={base_url} (LLM_API_KEY set)")
     return ChatOpenAI(
-        model="intelliModel-v2.5",
-        api_key=os.environ.get("LLM_API_KEY", ""),
-        base_url="https://api.xiaomiintelliModel.com/v1",
+        model=model_name,
+        api_key=api_key,
+        base_url=base_url,
         temperature=0,
         add_schema_to_system_prompt=True,
         dont_force_structured_output=False,
