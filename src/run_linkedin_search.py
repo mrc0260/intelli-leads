@@ -74,8 +74,7 @@ def create_intelliModel_llm() -> ChatOpenAI:
     return ChatOpenAI(
         model=model_name,
         api_key=api_key,
-        base_url=base_url,
-        temperature=0,
+        base_url=base_url, 
         add_schema_to_system_prompt=True,
         dont_force_structured_output=False,
         max_completion_tokens=8192,

@@ -11,6 +11,5 @@ export const intelliModelLLM = new ChatOpenAI({
   apiKey,
   configuration: {
     baseURL: process.env.MODEL_BASE_URL,
-  },
-  temperature: 0.2, // low temperature for better structured output
+  }
 });
