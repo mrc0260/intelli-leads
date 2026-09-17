@@ -86,7 +86,9 @@ cp .env.example .env
 
 Set `LLM_API_KEY` in `.env` to your own key. Optional values are documented in `.env.example`.
 
-## Run
+# ---------------------------------------------------------------------
+# Run Agent
+# ---------------------------------------------------------------------
 
 ```bash
 npx tsx src/index.ts
